@@ -1,0 +1,35 @@
+---
+title: "Assignment 5 Time Series"
+output: html_document
+date: "2025-04-02"
+---
+
+```{r}
+library(fpp)
+library(fpp2)
+Netflix_Subscribers <- read.csv("C:/Users/cgroo/OneDrive/Desktop/Netflix_Customer _Subscription-Time Series.csv", header=TRUE)
+
+names(Netflix_Subscribers)[1] <- "Date"
+
+Netflix_Subscriber_Ts <- ts(Netflix_Subscribers$Subscribers, start = c(2013, 2), frequency = 4)
+
+plot(Netflix_Subscriber_Ts)
+
+
+arima_model <- auto.arima(Netflix_Subscriber_Ts,trace=TRUE, stepwise = FALSE )
+
+#The Arima model selected ARIMA(0,1,1)(1,0,0)[4] with drift as the best model for this time series. The nonseasonal part  is (0,1,1) with the first 0 being that their i no auto regressive terms, the 1 in the second slot means that first differencing was applied and the 1 in the third slot means that it uses one moving average term. The seasonal part is (1,0,0) with the 1 in the first slot meaning one seasonal auto regressive term, indicating that subscriber counts from the same quarter last year influence the current quarter. The 0 in the second slot indicates that the model has no seasonal differencing. The 0 in third slot means that no moving average is used.
+
+arima_model$residuals
+hist(arima_model$residuals)
+Acf(arima_model$residuals)
+
+# The residuals have a distribution centered near zero, with most residuals falling between -5e+06 and 5e+06. The histogram indicates a roughly symmetric shape, though slightly skewed with a few larger residuals suggesting occasional under- or over-predictions. The mean of the residuals appears close to zero indicating the model captures the main trends and seasonality well. However, the presence of a few larger residuals suggests potential outliers or unmodeled effects, such as sudden market shifts.
+
+forecast_arima <- forecast(arima_model, h=5)
+forecast_arima
+accuracy(forecast_arima)
+
+# The mape of this model is 1.67 meaning that the model is off by an average of 1.67 percent. This is a pretty good accuracy, however is nit better then some of the other models that I have ran.
+```
+
